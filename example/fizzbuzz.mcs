@@ -1,0 +1,18 @@
+var i = 0;
+while (i <= 100) {
+	var isFizz = i % 3;
+	var isBuzz = i % 5;
+
+	if (isFizz)
+		print("Fizz");
+
+	if (isBuzz)
+		print("Buzz");
+
+	else if (!isFizz)
+		print(i);
+
+	print("\n");
+
+	i = i + 1;
+}
