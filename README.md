@@ -1,4 +1,4 @@
-#[M]inimal[C]ustom[S]cript compiler
+#[M]inimal [C]ustom [S]cript compiler
 Just for fun!
 
 ## Steps:
@@ -54,7 +54,7 @@ Operators are listed top to bottom, in descending precedence.
 
 | Precedence  | Operator            | Description | Associativity |
 | :---------: | :-----------------: | ------------- | :-------------: |
-| 1 | ! ... <BR> - ... | Logical NOT <BR> Unary Negation | right-to-left <BR> right-to-left |
+| 1 | ! ... <BR> - ... | Logical NOT <BR> Unary Negation | right-to-left |
 | 2 | ... * ... <BR> ... / ... <BR> ... % ... | Multiplication <BR> Division <BR> Remainder | left-to-right |
 | 3 | ... + ... <BR> ... - ... | Addition <BR> Subtraction | left-to-right |
 | 4 | ... < ... <BR> ... > ... <BR> ... <= ... <BR> ... >= ... | Less Than <BR> Greater Than <BR> Less Than Or Equal <BR> Greater Than Or Equal | left-to-right |
