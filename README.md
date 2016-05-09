@@ -2,7 +2,7 @@
 Just for fun!
 
 ## Steps:
-1. Lexical analysis (Missing)
+1. [Lexical analysis](../../releases/tag/v0.1)
 2. Syntax analysis (Missing)
 3. Semantic analysis (Missing)
 4. Code generation (Missing)
