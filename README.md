@@ -3,7 +3,7 @@ Just for fun!
 
 ## Steps:
 1. [Lexical analysis](../../releases/tag/v0.1)
-2. Syntax analysis (Missing)
+2. [Syntax analysis](../../releases/tag/v0.2) ([diff](../../compare/v0.1...v0.2))
 3. Semantic analysis (Missing)
 4. Code generation (Missing)
 
