@@ -1,10 +1,8 @@
 %option noyywrap c++ yylineno
 
 %{
-#include <iostream>
-#include <cstdlib>
+#include "Parserbase.h"
 %}
-
 
 DIGIT		[0-9]
 CHAR		[a-zA-Z_]
@@ -13,37 +11,37 @@ WS			[ \t\n]
 
 %%
 
-var		std::cout << yytext << std::endl;
-print	std::cout << yytext << std::endl;
-while	std::cout << yytext << std::endl;
-if		std::cout << yytext << std::endl;
-else	std::cout << yytext << std::endl;
+var		return Parser::VAR;
+print	return Parser::PRINT;
+while	return Parser::WHILE;
+if		return Parser::IF;
+else	return Parser::ELSE;
 
-"+"		std::cout << yytext << std::endl;
-"-"		std::cout << yytext << std::endl;
-"*"		std::cout << yytext << std::endl;
-"/"		std::cout << yytext << std::endl;
-"%"		std::cout << yytext << std::endl;
-"="		std::cout << yytext << std::endl;
-"!"		std::cout << yytext << std::endl;
-"!="	std::cout << yytext << std::endl;
-"=="	std::cout << yytext << std::endl;
-"<"		std::cout << yytext << std::endl;
-">"		std::cout << yytext << std::endl;
-"<="	std::cout << yytext << std::endl;
-">="	std::cout << yytext << std::endl;
-"&&"	std::cout << yytext << std::endl;
-"||"	std::cout << yytext << std::endl;
+"+"		return Parser::ADD;
+"-"		return Parser::SUBSTRACT;
+"*"		return Parser::MULTIPLIES;
+"/"		return Parser::DIVIDES;
+"%"		return Parser::MODULUS;
+"="		return Parser::ASSIGN;
+"!"		return Parser::NOT;
+"!="	return Parser::NOT_EQUAL;
+"=="	return Parser::EQUAL;
+"<"		return Parser::LESS;
+">"		return Parser::GREATER;
+"<="	return Parser::LESS_EQUAL;
+">="	return Parser::GREATER_EQUAL;
+"&&"	return Parser::AND;
+"||"	return Parser::OR;
 
-"{"		std::cout << yytext << std::endl;
-"}"		std::cout << yytext << std::endl;
-"("		std::cout << yytext << std::endl;
-")"		std::cout << yytext << std::endl;
-";"		std::cout << yytext << std::endl;
+"{"		return Parser::OPEN_BRACE;
+"}"		return Parser::CLOSE_BRACE;
+"("		return Parser::OPEN_PARENTHESIS;
+")"		return Parser::CLOSE_PARENTHESIS;
+";"		return Parser::SEMICOLON;
 
-{IDENTIFIER}			std::cout << "IDENTIFIER: " << yytext << std::endl;
-{DIGIT}+(\.{DIGIT}+)?	std::cout << "NUMBER: " << yytext << std::endl;
-["]([^"]*)["]			std::cout << "STRING: " << yytext << std::endl;
+{IDENTIFIER}			return Parser::IDENTIFIER;
+{DIGIT}+(\.{DIGIT}+)?	return Parser::NUMBER;
+["]([^"]*)["]			return Parser::STRING;
 
 {WS}+	// whitespaces
 

@@ -1,2 +1,4 @@
 # Generated files
 src/lex.yy.cc
+src/Parserbase.h
+src/parse.cc
