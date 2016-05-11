@@ -4,7 +4,7 @@ Just for fun!
 ## Steps:
 1. [Lexical analysis](../../releases/tag/v0.1)
 2. [Syntax analysis](../../releases/tag/v0.2) ([diff](../../compare/v0.1...v0.2))
-3. Semantic analysis (Missing)
+3. [Semantic analysis](../../releases/tag/v0.3) ([diff](../../compare/v0.2...v0.3))
 4. Code generation (Missing)
 
 ## Development and testing environment:
