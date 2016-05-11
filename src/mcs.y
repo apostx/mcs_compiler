@@ -1,6 +1,6 @@
 %lsp-needed
 
-%token IDENTIFIER
+%token <text> IDENTIFIER
 %token NUMBER
 %token STRING
 
@@ -26,6 +26,11 @@
 %left ADD SUBSTRACT
 %left MULTIPLIES DIVIDES MODULUS
 %right MINUS PNOT
+
+%union
+{
+	std::string *text;
+}
 
 %%
 
@@ -55,12 +60,16 @@ instructions:
 instruction:
 	VAR IDENTIFIER SEMICOLON
 	{
-		out << "instructions -> var IDENTIFIER;" << std::endl;
+		out << "instruction -> var IDENTIFIER; //IDENTIFIER: " << *$2 << std::endl;
+
+		manageDeclaration($2);
 	}
 |
 	VAR IDENTIFIER ASSIGN expression SEMICOLON
 	{
-		out << "instruction -> var IDENTIFIER = expression;" << std::endl;
+		out << "instruction -> var IDENTIFIER = expression; //IDENTIFIER: " << *$2 << std::endl;
+
+		manageDeclaration($2);
 	}
 |
 	expression SEMICOLON
@@ -115,6 +124,8 @@ expression:
 	IDENTIFIER
 	{
 		out << "expression -> IDENTIFIER" << std::endl;
+
+		checkVariableExists($1);
 	}
 |
 	NUMBER
@@ -124,7 +135,9 @@ expression:
 |
 	IDENTIFIER ASSIGN expression
 	{
-		out << "expression-> IDENTIFIER = expression;" << std::endl;
+		out << "instruction -> IDENTIFIER = expression; //IDENTIFIER: " << *$1 << std::endl;
+
+		checkVariableExists($1);
 	}
 |
 	SUBSTRACT %prec MINUS expression 

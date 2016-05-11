@@ -16,14 +16,14 @@ int main(int argc, char* argv[]) {
 }
 
 void input_handler(ifstream& in, int argc, char* argv[]) {
-	if (argc < 2) {
+	if(argc < 2) {
 		cerr << "Missing parameter: Source file path." << endl;
 		exit(1);
 	}
 
 	in.open(argv[1]);
 
-	if (!in) {
+	if(!in){
 		cerr << "Opening file failed: " << argv[1] << endl;
 		exit(1);
 	}

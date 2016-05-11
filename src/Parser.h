@@ -8,7 +8,7 @@
 #include <FlexLexer.h>
 #include <cstdlib>
 #include <iostream>
-#include <set>
+#include <map>
 #include <sstream>
 
 #undef Parser
@@ -21,8 +21,11 @@ class Parser : public ParserBase {
 
 	private:
 		std::ostream &out;
+		std::map<std::string,int> symboltable;
 		yyFlexLexer lexer;
 
+		void checkVariableExists(std::string const *variableName);
+		void manageDeclaration(std::string const *variableName);
 		void error(char const *msg); // called on (syntax) errors
 		int lex(); // returns the next token from the lexical scanner. 
 		void print(); // use, e.g., d_token, d_loc

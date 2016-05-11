@@ -10,10 +10,30 @@ inline void Parser::error(char const *msg) {
 	exit(1);
 }
 
+inline void Parser::checkVariableExists(std::string const *variableName) {
+	if (symboltable.count(*variableName) == 0) {
+		std::cerr << d_loc__.first_line << ": Semantics error: Missing declaration: \"" << *variableName << "\"" << std::endl;
+		exit(1);
+	}
+}
+
+inline void Parser::manageDeclaration(std::string const *variableName) {
+	if (0 < symboltable.count(*variableName)) {
+		std::cerr << d_loc__.first_line << ": Semantics error: Duplicate declaration: \"" << *variableName << "\" (line:" << symboltable[*variableName] << ")" << std::endl;
+		exit(1);
+	} else
+		symboltable[*variableName] = d_loc__.first_line;
+}
+
 // $insert lex
 inline int Parser::lex() {
+	int ret = lexer.yylex();
+
+	if(ret == Parser::IDENTIFIER)
+		d_val__.text = new std::string(lexer.YYText());
+
 	d_loc__.first_line = lexer.lineno();
-	return lexer.yylex();
+	return ret;
 }
 
 inline void Parser::print() {
