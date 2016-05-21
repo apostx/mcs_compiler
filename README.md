@@ -16,12 +16,10 @@ Just for fun!
 
 ## Reference:
 ### Types:
-##### Number:
+##### Integer
 
-```
-15.75
-```
-  
+Example: 1987
+
 ### Declaration:
 
 ```
@@ -47,6 +45,21 @@ if( condition ) {
     ...
 }
 ```
+
+### Functions:
+##### print:
+
+```
+void print(string);
+
+void print(integer);
+```
+
+Variables can not contain string type. <br />
+The language can not support string operations. <br />
+Text of a string has to be between double quotes. <br />
+String can contain escaped characters. <br />
+Example: "Hello World!\n"
 
 ### Operator precedence:
 
