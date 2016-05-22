@@ -1,8 +1,9 @@
+%baseclass-preinclude "preinclude.h"
 %lsp-needed
 
 %token <text> IDENTIFIER
-%token NUMBER
-%token STRING
+%token <text> NUMBER
+%token <text> STRING
 
 %token VAR
 %token PRINT
@@ -30,7 +31,13 @@
 %union
 {
 	std::string *text;
+	CommandDescriptor *command;
 }
+
+%type <command> instructions;
+%type <command> instruction;
+%type <command> block;
+%type <command> expression;
 
 %%
 
@@ -41,182 +48,240 @@ start:
 |
 	instructions
 	{
-		out << "start -> instructions" << std::endl;
+		std::string code = "\n";
+
+		out << CodeGenerator::generate(symbolTable, constantTable, &code);
+
+		//delete $1;
 	}
 ;
 
 instructions:
 	instruction
 	{
-		out << "instructions -> instruction" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $1;
 	}
 |
 	instruction instructions
 	{
-		out << "instructions -> instruction instructions" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $1;
+		//delete $2;
 	}
 ;
 
 instruction:
 	VAR IDENTIFIER SEMICOLON
 	{
-		out << "instruction -> var IDENTIFIER; //IDENTIFIER: " << *$2 << std::endl;
-
 		manageDeclaration($2);
+
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $2;
 	}
 |
 	VAR IDENTIFIER ASSIGN expression SEMICOLON
 	{
-		out << "instruction -> var IDENTIFIER = expression; //IDENTIFIER: " << *$2 << std::endl;
-
 		manageDeclaration($2);
+
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $2;
+		//delete $4;
 	}
 |
 	expression SEMICOLON
 	{
-		out << "instruction -> expression;" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $1;
 	}
 |
 	WHILE OPEN_PARENTHESIS expression CLOSE_PARENTHESIS block
 	{
-		out << "instruction -> while( expression ) block" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $3;
+		//delete $5;
 	}
 |
 	IF OPEN_PARENTHESIS expression CLOSE_PARENTHESIS block %prec ENDIF
 	{
-		out << "instruction -> if( expression ) block" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $3;
+		//delete $5;
 	}
 |
 	IF OPEN_PARENTHESIS expression CLOSE_PARENTHESIS block ELSE block
 	{
-		out << "instruction -> if( expression ) block ELSE block" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $3;
+		//delete $5;
+		//delete $7;
 	}
 |
 	PRINT OPEN_PARENTHESIS expression CLOSE_PARENTHESIS SEMICOLON
 	{
-		out << "instruction -> print( expression );" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $3;
 	}
 |
 	PRINT OPEN_PARENTHESIS STRING CLOSE_PARENTHESIS SEMICOLON
 	{
-		out << "instruction -> print( STRING );" << std::endl;
+		ConstantDescriptor variable = manageConstant($3, STR);
+
+		
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		
+
+		//delete $3;
 	}
 ;
 
 block:
 	OPEN_BRACE CLOSE_BRACE
 	{
-		out << "block -> {}" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
 	}
 |
 	instruction
 	{
-		out << "block -> instruction" << std::endl;
+		$$ = $1;
 	}
 |
 	OPEN_BRACE instructions CLOSE_BRACE
 	{
-		out << "block -> { instructions }" << std::endl;
+		$$ = $2;
 	}
 ;
 
 expression:
 	IDENTIFIER
 	{
-		out << "expression -> IDENTIFIER" << std::endl;
+		VariableDescriptor variable = manageVariable($1);
 
-		checkVariableExists($1);
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $1;
 	}
 |
 	NUMBER
 	{
-		out << "expression -> NUMBER" << std::endl;
+		ConstantDescriptor variable = manageConstant($1, INT);
+
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $1;
 	}
 |
 	IDENTIFIER ASSIGN expression
 	{
-		out << "instruction -> IDENTIFIER = expression; //IDENTIFIER: " << *$1 << std::endl;
+		VariableDescriptor variable = manageVariable($1);
 
-		checkVariableExists($1);
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $3;
 	}
 |
 	SUBSTRACT %prec MINUS expression 
 	{
-		out << "expression -> -expression" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $2;
 	}
 |
 	NOT %prec PNOT expression
 	{
-		out << "expression -> !expression" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $2;
 	}
 |
 	OPEN_PARENTHESIS expression CLOSE_PARENTHESIS
 	{
-		out << "expression -> ( expression )" << std::endl;
+		$$ = $2;
 	}
 |
 	expression ADD expression
 	{
-		out << "expression -> expression + expression" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $1;
+		//delete $3;
 	}
 |
 	expression SUBSTRACT expression
 	{
-		out << "expression -> expression - expression" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $1;
+		//delete $3;
 	}
 |
 	expression MULTIPLIES expression
 	{
-		out << "expression -> expression * expression" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $1;
+		//delete $3;
 	}
 |
 	expression DIVIDES expression
 	{
-		out << "expression -> expression / expression" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $1;
+		//delete $3;
 	}
 |
 	expression MODULUS expression
 	{
-		out << "expression -> expression % expression" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $1;
+		//delete $3;
 	}
 |
 	expression EQUAL expression
 	{
-		out << "expression -> expression == expression" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $1;
+		//delete $3;
 	}
 |
 	expression NOT_EQUAL expression
 	{
-		out << "expression -> expression != expression" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $1;
+		//delete $3;
 	}
 |
 	expression LESS expression
 	{
-		out << "expression -> expression < expression" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $1;
+		//delete $3;
 	}
 |
 	expression GREATER expression
 	{
-		out << "expression -> expression > expression" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $1;
+		//delete $3;
 	}
 |
 	expression LESS_EQUAL expression
 	{
-		out << "expression -> expression <= expression" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $1;
+		//delete $3;
 	}
 |
 	expression GREATER_EQUAL expression
 	{
-		out << "expression -> expression >= expression" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $1;
+		//delete $3;
 	}
 |
 	expression AND expression
 	{
-		out << "expression -> expression && expression" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $1;
+		//delete $3;
 	}
 |
 	expression OR expression
 	{
-		out << "expression -> expression || expression" << std::endl;
+		$$ = new CommandDescriptor(d_loc__.first_line, "");
+		//delete $1;
+		//delete $3;
 	}
 ;

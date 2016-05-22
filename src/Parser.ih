@@ -10,27 +10,47 @@ inline void Parser::error(char const *msg) {
 	exit(1);
 }
 
-inline void Parser::checkVariableExists(std::string const *variableName) {
-	if (symboltable.count(*variableName) == 0) {
-		std::cerr << d_loc__.first_line << ": Semantics error: Missing declaration: \"" << *variableName << "\"" << std::endl;
-		exit(1);
-	}
-}
-
-inline void Parser::manageDeclaration(std::string const *variableName) {
-	if (0 < symboltable.count(*variableName)) {
-		std::cerr << d_loc__.first_line << ": Semantics error: Duplicate declaration: \"" << *variableName << "\" (line:" << symboltable[*variableName] << ")" << std::endl;
+inline VariableDescriptor Parser::manageDeclaration(std::string const *variableName) {
+	if (0 < symbolTable.count(*variableName)) {
+		std::cerr << d_loc__.first_line << ": Semantics error: Duplicate declaration: \"" << *variableName << "\" (line:" << symbolTable[*variableName].line << ")" << std::endl;
 		exit(1);
 	} else
-		symboltable[*variableName] = d_loc__.first_line;
+		symbolTable[*variableName] = VariableDescriptor(d_loc__.first_line, *variableName);
+
+	return symbolTable[*variableName];
+}
+
+inline VariableDescriptor Parser::manageVariable(std::string const *variableName) {
+	if (symbolTable.count(*variableName) == 0) {
+		std::cerr << d_loc__.first_line << ": Semantics error: Missing declaration: \"" << *variableName << "\"" << std::endl;
+		exit(1);
+	}	
+
+	return symbolTable[*variableName];
+}
+
+inline ConstantDescriptor Parser::manageConstant(std::string const *constantValue, Type type) {
+	if (constantTable.count(*constantValue) == 0) {
+		std::ostringstream id;
+        	id << constantTable.size();
+
+		constantTable[*constantValue] = ConstantDescriptor(d_loc__.first_line, id.str(), type, *constantValue);
+	}
+
+	return constantTable[*constantValue];
 }
 
 // $insert lex
 inline int Parser::lex() {
 	int ret = lexer.yylex();
 
-	if(ret == Parser::IDENTIFIER)
-		d_val__.text = new std::string(lexer.YYText());
+	switch(ret) {
+		case Parser::IDENTIFIER:
+		case Parser::NUMBER:
+		case Parser::STRING:
+			d_val__.text = new std::string(lexer.YYText());
+			break;
+	}	
 
 	d_loc__.first_line = lexer.lineno();
 	return ret;

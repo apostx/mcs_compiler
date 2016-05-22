@@ -21,11 +21,13 @@ class Parser : public ParserBase {
 
 	private:
 		std::ostream &out;
-		std::map<std::string,int> symboltable;
+		std::map<std::string,VariableDescriptor> symbolTable;
+		std::map<std::string,ConstantDescriptor> constantTable;
 		yyFlexLexer lexer;
 
-		void checkVariableExists(std::string const *variableName);
-		void manageDeclaration(std::string const *variableName);
+		VariableDescriptor manageDeclaration(std::string const *variableName);
+		VariableDescriptor manageVariable(std::string const *variableName);
+		ConstantDescriptor manageConstant(std::string const *constantValue, Type type);
 		void error(char const *msg); // called on (syntax) errors
 		int lex(); // returns the next token from the lexical scanner. 
 		void print(); // use, e.g., d_token, d_loc
