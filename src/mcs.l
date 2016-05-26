@@ -40,7 +40,7 @@ else	return Parser::ELSE;
 ";"	return Parser::SEMICOLON;
 
 {IDENTIFIER}		return Parser::IDENTIFIER;
-[1-9]{DIGIT}*		return Parser::NUMBER;
+{DIGIT}|([1-9]{DIGIT}*)	return Parser::NUMBER;
 \"(\\.|[^\\"])*\"	return Parser::STRING;
 
 {WS}+	// whitespaces

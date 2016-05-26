@@ -48,26 +48,26 @@ start:
 |
 	instructions
 	{
-		std::string code = "\n";
+		out << CodeGenerator::generate(symbolTable, constantTable, &$1->code);
 
-		out << CodeGenerator::generate(symbolTable, constantTable, &code);
-
-		//delete $1;
+		delete $1;
 	}
 ;
 
 instructions:
 	instruction
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $1;
+		$$ = new CommandDescriptor(d_loc__.first_line, $1->code);
+
+		delete $1;
 	}
 |
 	instruction instructions
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $1;
-		//delete $2;
+		$$ = new CommandDescriptor(d_loc__.first_line, $1->code + $2->code);
+
+		delete $1;
+		delete $2;
 	}
 ;
 
@@ -77,61 +77,82 @@ instruction:
 		manageDeclaration($2);
 
 		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $2;
+
+		delete $2;
 	}
 |
 	VAR IDENTIFIER ASSIGN expression SEMICOLON
 	{
-		manageDeclaration($2);
+		VariableDescriptor varDescriptor = manageDeclaration($2);
 
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $2;
-		//delete $4;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			$4->code + CodeGenerator::assignment(varDescriptor)
+		);
+
+		delete $2;
+		delete $4;
 	}
 |
 	expression SEMICOLON
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $1;
+		$$ = $1;
 	}
 |
 	WHILE OPEN_PARENTHESIS expression CLOSE_PARENTHESIS block
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $3;
-		//delete $5;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			$3->code + CodeGenerator::while_(*$3, *$5)
+		);
+
+		delete $3;
+		delete $5;
 	}
 |
 	IF OPEN_PARENTHESIS expression CLOSE_PARENTHESIS block %prec ENDIF
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $3;
-		//delete $5;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			$3->code + CodeGenerator::if_(*$3, *$5)
+		);
+
+		delete $3;
+		delete $5;
 	}
 |
 	IF OPEN_PARENTHESIS expression CLOSE_PARENTHESIS block ELSE block
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $3;
-		//delete $5;
-		//delete $7;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			$3->code + CodeGenerator::ifElse(*$3, *$5, *$7)
+		);
+
+		delete $3;
+		delete $5;
+		delete $7;
 	}
 |
 	PRINT OPEN_PARENTHESIS expression CLOSE_PARENTHESIS SEMICOLON
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $3;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			$3->code + CodeGenerator::printInt()
+		);
+
+		delete $3;
 	}
 |
 	PRINT OPEN_PARENTHESIS STRING CLOSE_PARENTHESIS SEMICOLON
 	{
-		ConstantDescriptor variable = manageConstant($3, STR);
+		ConstantDescriptor strDescriptor = manageConstant($3, STR);
 
-		
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			CodeGenerator::moveAddressToEAX(strDescriptor) + CodeGenerator::printStr()
+		);
 
-		//delete $3;
+		delete $3;
 	}
 ;
 
@@ -155,38 +176,58 @@ block:
 expression:
 	IDENTIFIER
 	{
-		VariableDescriptor variable = manageVariable($1);
+		VariableDescriptor variableDescriptor = manageVariable($1);
 
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $1;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			CodeGenerator::moveVarToEAX(variableDescriptor)
+		);
+
+		delete $1;
 	}
 |
 	NUMBER
 	{
-		ConstantDescriptor variable = manageConstant($1, INT);
+		ConstantDescriptor constantDescriptor = manageConstant($1, INT);
 
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $1;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			CodeGenerator::moveVarToEAX(constantDescriptor )
+		);
+
+		delete $1;
 	}
 |
 	IDENTIFIER ASSIGN expression
 	{
-		VariableDescriptor variable = manageVariable($1);
+		VariableDescriptor varDescriptor = manageVariable($1);
 
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $3;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			$3->code + CodeGenerator::assignment(varDescriptor)
+		);
+
+		delete $3;
 	}
 |
 	SUBSTRACT %prec MINUS expression 
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $2;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			CodeGenerator::neg(*$2)
+		);
+
+		delete $2;
 	}
 |
 	NOT %prec PNOT expression
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $2;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			CodeGenerator::not_(*$2)
+		);
+
+		delete $2;
 	}
 |
 	OPEN_PARENTHESIS expression CLOSE_PARENTHESIS
@@ -196,92 +237,144 @@ expression:
 |
 	expression ADD expression
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $1;
-		//delete $3;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			CodeGenerator::add(*$1, *$3)
+		);
+
+		delete $1;
+		delete $3;
 	}
 |
 	expression SUBSTRACT expression
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $1;
-		//delete $3;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			CodeGenerator::sub(*$1, *$3)
+		);
+
+		delete $1;
+		delete $3;
 	}
 |
 	expression MULTIPLIES expression
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $1;
-		//delete $3;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			CodeGenerator::mul(*$1, *$3)
+		);
+
+		delete $1;
+		delete $3;
 	}
 |
 	expression DIVIDES expression
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $1;
-		//delete $3;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			CodeGenerator::div(*$1, *$3)
+		);
+
+		delete $1;
+		delete $3;
 	}
 |
 	expression MODULUS expression
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $1;
-		//delete $3;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			CodeGenerator::mod(*$1, *$3)
+		);
+
+		delete $1;
+		delete $3;
 	}
 |
 	expression EQUAL expression
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $1;
-		//delete $3;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			CodeGenerator::equal(*$1, *$3)
+		);
+
+		delete $1;
+		delete $3;
 	}
 |
 	expression NOT_EQUAL expression
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $1;
-		//delete $3;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			CodeGenerator::notEqual(*$1, *$3)
+		);
+
+		delete $1;
+		delete $3;
 	}
 |
 	expression LESS expression
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $1;
-		//delete $3;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			CodeGenerator::less(*$1, *$3)
+		);
+
+		delete $1;
+		delete $3;
 	}
 |
 	expression GREATER expression
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $1;
-		//delete $3;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			CodeGenerator::greater(*$1, *$3)
+		);
+
+		delete $1;
+		delete $3;
 	}
 |
 	expression LESS_EQUAL expression
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $1;
-		//delete $3;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			CodeGenerator::lessEqual(*$1, *$3)
+		);
+
+		delete $1;
+		delete $3;
 	}
 |
 	expression GREATER_EQUAL expression
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $1;
-		//delete $3;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			CodeGenerator::greaterEqual(*$1, *$3)
+		);
+
+		delete $1;
+		delete $3;
 	}
 |
 	expression AND expression
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $1;
-		//delete $3;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			$3->code + CodeGenerator::and_(*$1, *$3)
+		);
+
+		delete $1;
+		delete $3;
 	}
 |
 	expression OR expression
 	{
-		$$ = new CommandDescriptor(d_loc__.first_line, "");
-		//delete $1;
-		//delete $3;
+		$$ = new CommandDescriptor(
+			d_loc__.first_line,
+			$3->code + CodeGenerator::or_(*$1, *$3)
+		);
+
+		delete $1;
+		delete $3;
 	}
 ;
