@@ -5,7 +5,7 @@ Just for fun!
 1. [Lexical analysis](../../releases/tag/v0.1)
 2. [Syntax analysis](../../releases/tag/v0.2) ([diff](../../compare/v0.1...v0.2))
 3. [Semantic analysis](../../releases/tag/v0.3) ([diff](../../compare/v0.2...v0.3))
-4. Code generation (Missing)
+4. [Code generation](../../releases/tag/v0.4) ([diff](../../compare/v0.3...v0.4))
 
 ## Development and testing environment:
 * Debian 4.9.2-10
